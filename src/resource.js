@@ -1,10 +1,9 @@
 var res = {
-    HelloWorld_png : "res/HelloWorld.png",
-    CloseNormal_png : "res/CloseNormal.png",
-    CloseSelected_png : "res/CloseSelected.png"
+	title_png : 'res/title.png',
+	start_button_png : 'res/start_button.png'
 };
 
-var g_resources = [];
-for (var i in res) {
-    g_resources.push(res[i]);
-}
+var g_main_menu = [
+    res.title_png,
+    res.start_button_png,
+];
