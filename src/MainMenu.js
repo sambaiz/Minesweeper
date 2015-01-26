@@ -31,7 +31,9 @@ var MainMenuLayer = cc.Layer.extend({
         return true;
     },
     onStartGame:function (pSender) {
-        alert("START GAME");
+        cc.LoaderScene.preload(g_game, function () {
+            cc.director.runScene(new cc.TransitionFade(1.2, new GameScene()));
+        }, this);
     }
 });
 
