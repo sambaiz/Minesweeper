@@ -1,7 +1,13 @@
 STATE_MINE = true;
 
+CLOSE = 0;
+OPEN = 1;
+FLAG = 2;
+
 var GameLayer = cc.Layer.extend({
     _panels: [],
+    _bombs: [],
+    _miss_flags: [],
     _panel_size: cc.p(42, 42),
     _panels_width: 5,
     _panels_height: 5,
@@ -70,28 +76,28 @@ var GameLayer = cc.Layer.extend({
     },
     initPanel: function () {
         var winSize = cc.director.getWinSize();
-        var bomb = []
+        this._bombs = []
         for (var i=0; i < this._bomb_num; i++){
             var bp = Math.floor(Math.random() * (this._panels_width * this._panels_height));
-            if(bomb.indexOf(bp) >= 0){
+            if(this._bombs.indexOf(bp) >= 0){
                 i--;
                 continue;
             }
-            bomb.push(bp);
+            this._bombs.push(bp);
         }
-        console.log(bomb);
+        console.log(this._bombs);
         this._panels = []
         var zero_line = []
         for(var i=0; i<this._panels_width; i++){
-            zero_line.push(0);
+            zero_line.push([0, CLOSE]);
         }
         console.log(zero_line);
         for(var i=0; i<this._panels_height; i++){
-            this._panels.push([].concat(zero_line));
+            this._panels.push($.extend(true,[],zero_line));
         }
         console.log(this._panels);
         console.log("-----------");
-        for(var b of bomb){
+        for(var b of this._bombs){
             var line = Math.floor(b / this._panels_width);
             var row = b % this._panels_width;
             console.log(line);
@@ -104,10 +110,10 @@ var GameLayer = cc.Layer.extend({
                         line + i < this._panels.length &&
                         row + j < this._panels[line + i].length){
                             if(i==0 && j==0)
-                                this._panels[line + i][row + j] = -1;
+                                this._panels[line + i][row + j][0] = -1; //bomb
                             else
-                                if(this._panels[line + i][row + j] != -1)
-                                    this._panels[line + i][row + j] += 1;
+                                if(this._panels[line + i][row + j][0] != -1)
+                                    this._panels[line + i][row + j][0] += 1;
                         }
                             
         }
@@ -141,8 +147,12 @@ var GameLayer = cc.Layer.extend({
             line < 0 || line >= this._panels_height)
             return;
         var p = this._panels[line][row];
-        if(p != -1)
-            var panel = new cc.Sprite(res.panel_png, cc.rect(42 * (p % 3), 42 * (Math.floor(p / 3) + 1), 42, 42));
+        console.log(p)
+        if(p[1] == OPEN)
+            return;
+        p[1] = OPEN;
+        if(p[0] != -1)
+            var panel = new cc.Sprite(res.panel_png, cc.rect(42 * (p[0] % 3), 42 * (Math.floor(p[0] / 3) + 1), 42, 42));
         else
             var panel = new cc.Sprite(res.panel_png, cc.rect(84, 0, 42, 42));
         panel.attr({
@@ -152,6 +162,8 @@ var GameLayer = cc.Layer.extend({
             y: winSize.height - (this._panel_size.y * line)
         });
         this.addChild(panel, 10, 1);
+        if(p[0] == -1)
+            console.log("GAMEOVER!")
     },
 
     setFlag: function (event) {
@@ -161,17 +173,46 @@ var GameLayer = cc.Layer.extend({
         if(row < 0 || row >= this._panels_width || 
             line < 0 || line >= this._panels_height)
             return;
-        var panel = new cc.Sprite(res.panel_png, cc.rect(42, 0, 42, 42));
-        panel.attr({
-            anchorX: 0,
-            anchorY: 1,
-            x: this._panel_size.x * row,
-            y: winSize.height - (this._panel_size.y * line)
-        });
+        var p = this._panels[line][row];
+        if(p[1] == CLOSE){
+            p[1] = FLAG;
+            var panel = new cc.Sprite(res.panel_png, cc.rect(42, 0, 42, 42));
+            panel.attr({
+                anchorX: 0,
+                anchorY: 1,
+                x: this._panel_size.x * row,
+                y: winSize.height - (this._panel_size.y * line)
+            });
+            if(this._bombs.indexOf(this._panels_width * line + row) >= 0)
+                this._bombs.splice(this._bombs.indexOf(this._panels_width * line + row), 1);
+            else
+                this._miss_flags.push(this._panels_width * line + row);
+        }else if(p[1] == FLAG){
+            p[1] = CLOSE;
+            var panel = new cc.Sprite(res.panel_png, cc.rect(0, 0, 42, 42));
+            panel.attr({
+                anchorX: 0,
+                anchorY: 1,
+                x: this._panel_size.x * row,
+                y: winSize.height - (this._panel_size.y * line)
+            });
+            if(p[0] == -1)
+                this._bombs.push(this._panels_width * line + row);
+            else
+                if(this._miss_flags.indexOf(this._panels_width * line + row) >= 0)
+                    this._miss_flags.splice(this._miss_flags.indexOf(this._panels_width * line + row), 1);
+        }else{
+            return;
+        }
         this.addChild(panel, 10, 1);
+        this.clearCheck();
     },
     onModeChange:function(){
         STATE_MINE = !STATE_MINE;
+    },
+    clearCheck:function(){
+        if(this._bombs.length == 0 && this._miss_flags == 0)
+            console.log("CLEAR!!");
     }
 });
 
