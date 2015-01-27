@@ -1,3 +1,5 @@
+STATE_MINE = true;
+
 var GameLayer = cc.Layer.extend({
     _panels: [],
     _panel_size: cc.p(42, 42),
@@ -11,14 +13,39 @@ var GameLayer = cc.Layer.extend({
     init:function () {
         this.initPanel()
 
+        var winSize = cc.director.getWinSize();
+        this.addChild(new cc.LayerColor(cc.color(255,255,0,255), winSize.width, winSize.height),0)
+        
+        var panel = new cc.Sprite(res.panel_png, cc.rect(0, 168, 42, 42));
+        var panel2 = new cc.Sprite(res.panel_png, cc.rect(42, 168, 42, 42));
+        var panel3 = new cc.Sprite(res.panel_png, cc.rect(84, 168, 42, 42));
+        var panel4 = new cc.Sprite(res.panel_png, cc.rect(0, 168, 42, 42));
+        var panel5 = new cc.Sprite(res.panel_png, cc.rect(42, 168, 42, 42));
+        var panel6 = new cc.Sprite(res.panel_png, cc.rect(84, 168, 42, 42));
+
+        var menuItemSprite = new cc.MenuItemSprite(panel,panel2,panel3, null,this);
+        var menuItemSprite2 = new cc.MenuItemSprite(panel5,panel4,panel6, null,this);
+        
+        var item2 = new cc.MenuItemToggle(
+            menuItemSprite,
+            menuItemSprite2);
+        item2.setCallback( this.onModeChange );
+
+        var menu = new cc.Menu(item2);
+        menu.setPosition(100,100);
+        this.addChild(menu);
+
         if ('mouse' in cc.sys.capabilities){
             cc.eventManager.addListener({
                 event: cc.EventListener.MOUSE,
                 onMouseUp: function(event){
                     if(event.getButton() == cc.EventMouse.BUTTON_LEFT)
                         console.log(String(event.getLocationX()) + ", " + String(event.getLocationY()));
-                        event.getCurrentTarget().openPanel(event);
-                        //event.getCurrentTarget().processEvent(event);
+                        if(STATE_MINE)
+                            event.getCurrentTarget().openPanel(event);
+                        else
+                            event.getCurrentTarget().setFlag(event);
+
                 }
             }, this);
         }
@@ -46,8 +73,10 @@ var GameLayer = cc.Layer.extend({
         var bomb = []
         for (var i=0; i < this._bomb_num; i++){
             var bp = Math.floor(Math.random() * (this._panels_width * this._panels_height));
-            if(bomb.indexOf(bp) >= 0)
+            if(bomb.indexOf(bp) >= 0){
+                i--;
                 continue;
+            }
             bomb.push(bp);
         }
         console.log(bomb);
@@ -123,6 +152,26 @@ var GameLayer = cc.Layer.extend({
             y: winSize.height - (this._panel_size.y * line)
         });
         this.addChild(panel, 10, 1);
+    },
+
+    setFlag: function (event) {
+        var winSize = cc.director.getWinSize();
+        var row = Math.floor(event.getLocationX() / 42);
+        var line = Math.floor((winSize.height  - event.getLocationY()) / 42);
+        if(row < 0 || row >= this._panels_width || 
+            line < 0 || line >= this._panels_height)
+            return;
+        var panel = new cc.Sprite(res.panel_png, cc.rect(42, 0, 42, 42));
+        panel.attr({
+            anchorX: 0,
+            anchorY: 1,
+            x: this._panel_size.x * row,
+            y: winSize.height - (this._panel_size.y * line)
+        });
+        this.addChild(panel, 10, 1);
+    },
+    onModeChange:function(){
+        STATE_MINE = !STATE_MINE;
     }
 });
 
