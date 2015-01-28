@@ -1,4 +1,9 @@
-STATE_MINE = true;
+STATE_PLAYING = 0;
+STATE_GAMEOVER = 1;
+STATE_CLEAR = 2;
+
+MINE_MODE = 0;
+FLAG_MODE = 1;
 
 CLOSE = 0;
 OPEN = 1;
@@ -12,6 +17,8 @@ var GameLayer = cc.Layer.extend({
     _panels_width: 5,
     _panels_height: 5,
     _bomb_num: 5,
+    _state: STATE_PLAYING,
+    _mode: null,
     ctor:function () {
         this._super();
         this.init();
@@ -21,6 +28,11 @@ var GameLayer = cc.Layer.extend({
 
         var winSize = cc.director.getWinSize();
         this.addChild(new cc.LayerColor(cc.color(255,255,0,255), winSize.width, winSize.height),0)
+
+        this._state = STATE_PLAYING;
+        this._mode = MINE_MODE;
+
+        console.log(this);
         
         var panel = new cc.Sprite(res.panel_png, cc.rect(0, 168, 42, 42));
         var panel2 = new cc.Sprite(res.panel_png, cc.rect(42, 168, 42, 42));
@@ -35,7 +47,7 @@ var GameLayer = cc.Layer.extend({
         var item2 = new cc.MenuItemToggle(
             menuItemSprite,
             menuItemSprite2);
-        item2.setCallback( this.onModeChange );
+        item2.setCallback(this.onModeChange, this);
 
         var menu = new cc.Menu(item2);
         menu.setPosition(100,100);
@@ -47,11 +59,7 @@ var GameLayer = cc.Layer.extend({
                 onMouseUp: function(event){
                     if(event.getButton() == cc.EventMouse.BUTTON_LEFT)
                         console.log(String(event.getLocationX()) + ", " + String(event.getLocationY()));
-                        if(STATE_MINE)
-                            event.getCurrentTarget().openPanel(event);
-                        else
-                            event.getCurrentTarget().setFlag(event);
-
+                        event.getCurrentTarget().point(event);
                 }
             }, this);
         }
@@ -61,8 +69,8 @@ var GameLayer = cc.Layer.extend({
                 prevTouchId: -1,
                 event: cc.EventListener.TOUCH_ALL_AT_ONCE,
                 onTouchesEnded:function (touches, event) {
-                    var touch = touches[0];
-                    console.log(touch.getID());
+                    event.getCurrentTarget().point(touches[0]);
+
                     /*
                     if (this.prevTouchId != touch.getID())
                         this.prevTouchId = touch.getID();
@@ -73,6 +81,14 @@ var GameLayer = cc.Layer.extend({
         }
 
         return true;
+    },
+    point: function(event){
+        if(this._state != STATE_PLAYING)
+            return;
+        if(this._mode == MINE_MODE)
+            this.openPanel(event);
+        else
+            this.setFlag(event);
     },
     initPanel: function () {
         var winSize = cc.director.getWinSize();
@@ -162,8 +178,11 @@ var GameLayer = cc.Layer.extend({
             y: winSize.height - (this._panel_size.y * line)
         });
         this.addChild(panel, 10, 1);
-        if(p[0] == -1)
-            console.log("GAMEOVER!")
+        if(p[0] == -1){
+            console.log("GAMEOVER!");
+            this._state = STATE_GAMEOVER;
+        }
+
     },
 
     setFlag: function (event) {
@@ -208,11 +227,16 @@ var GameLayer = cc.Layer.extend({
         this.clearCheck();
     },
     onModeChange:function(){
-        STATE_MINE = !STATE_MINE;
+        if(this._mode == MINE_MODE)
+            this._mode = FLAG_MODE;
+        else
+            this._mode = MINE_MODE;
     },
     clearCheck:function(){
-        if(this._bombs.length == 0 && this._miss_flags == 0)
+        if(this._bombs.length == 0 && this._miss_flags == 0){
             console.log("CLEAR!!");
+            this._state = STATE_CLEAR;
+        }
     }
 });
 
