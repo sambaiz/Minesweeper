@@ -1,15 +1,20 @@
 .DS_Store
 .idea
-proj.android/assets
-proj.android/bin
-proj.android/gen
-proj.android/libs/armeabi
-proj.android/obj
-proj.android/out
-proj.android/local.properties
-proj.ios/*.xcodeproj/project.xcworkspace/xcuserdata
-proj.ios/*.xcodeproj/xcuserdata
-proj.ios/cocos2dx-store-example.xcodeproj/project.xcworkspace/xcshareddata/cocos2dx-store-example.xccheckout
+frameworks/runtime-src/proj.android/assets
+frameworks/js-bindings/cocos2d-x/cocos/platform/android/java/assets
+frameworks/runtime-src/proj.android/bin
+frameworks/js-bindings/cocos2d-x/cocos/platform/android/java/bin
+frameworks/runtime-src/proj.android/gen
+frameworks/js-bindings/cocos2d-x/cocos/platform/android/java/gen
+frameworks/runtime-src/proj.android/libs/armeabi
+frameworks/runtime-src/proj.android/obj
+frameworks/runtime-src/proj.android/out
+frameworks/runtime-src/proj.android/local.properties
+frameworks/js-bindings/cocos2d-x/cocos/platform/android/java/local.properties
+frameworks/runtime-src/proj.ios/*.xcodeproj/project.xcworkspace/xcuserdata
+frameworks/runtime-src/proj.ios/*.xcodeproj/xcuserdata
+frameworks/runtime-src/proj.ios/cocos2dx-store-example.xcodeproj/project.xcworkspace/xcshareddata/cocos2dx-store-example.xccheckout
+frameworks/js-bindings/cocos2d-x/cocos/platform/android/java/gen
 
 ### Bower ###
 bower_components

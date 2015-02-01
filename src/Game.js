@@ -109,7 +109,8 @@ var GameLayer = cc.Layer.extend({
         }
         console.log(zero_line);
         for(var i=0; i<this._panels_height; i++){
-            this._panels.push($.extend(true,[],zero_line));
+            //this._panels.push($.extend(true,[],zero_line)); jquery入れるとAndroidで動かない?
+            this._panels.push([[0,0],[0,0],[0,0],[0,0],[0,0]]);
         }
         console.log(this._panels);
         console.log("-----------");
