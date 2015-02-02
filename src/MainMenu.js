@@ -5,7 +5,7 @@ var MainMenuLayer = cc.Layer.extend({
         this.init();
     },
     init:function () {
-        winSize = cc.director.getWinSize();
+        winSize = cc.winSize;
         
         var title = new cc.Sprite(res.title_png);
         title.attr({

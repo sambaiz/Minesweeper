@@ -9,6 +9,8 @@ CLOSE = 0;
 OPEN = 1;
 FLAG = 2;
 
+var MS = MS || {};
+
 var GameLayer = cc.Layer.extend({
     _panels: [],
     _bombs: [],
@@ -182,6 +184,8 @@ var GameLayer = cc.Layer.extend({
         if(p[0] == -1){
             console.log("GAMEOVER!");
             this._state = STATE_GAMEOVER;
+            MS.CLEAR = false;
+            this.onGameOver();
         }
 
     },
@@ -234,10 +238,18 @@ var GameLayer = cc.Layer.extend({
             this._mode = MINE_MODE;
     },
     clearCheck:function(){
+        console.log("bombs:" + this._bombs + " miss_flags:" + this._miss_flags)
         if(this._bombs.length == 0 && this._miss_flags == 0){
             console.log("CLEAR!!");
             this._state = STATE_CLEAR;
+            MS.CLEAR = true;
+            this.onGameOver();
         }
+    },
+    onGameOver:function () {
+        var scene = new cc.Scene();
+        scene.addChild(new GameOver());
+        cc.director.runScene(new cc.TransitionFade(1.2, scene));
     }
 });
 

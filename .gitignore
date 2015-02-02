@@ -14,7 +14,6 @@ frameworks/js-bindings/cocos2d-x/cocos/platform/android/java/local.properties
 frameworks/runtime-src/proj.ios/*.xcodeproj/project.xcworkspace/xcuserdata
 frameworks/runtime-src/proj.ios/*.xcodeproj/xcuserdata
 frameworks/runtime-src/proj.ios/cocos2dx-store-example.xcodeproj/project.xcworkspace/xcshareddata/cocos2dx-store-example.xccheckout
-frameworks/js-bindings/cocos2d-x/cocos/platform/android/java/gen
 
 ### Bower ###
 bower_components
