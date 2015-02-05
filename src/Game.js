@@ -1,6 +1,7 @@
 STATE_PLAYING = 0;
 STATE_GAMEOVER = 1;
 STATE_CLEAR = 2;
+STATE_PAUSE = 3;
 
 MINE_MODE = 0;
 FLAG_MODE = 1;
@@ -21,6 +22,8 @@ var GameLayer = cc.Layer.extend({
     _bomb_num: 5,
     _state: STATE_PLAYING,
     _mode: null,
+    _dialog: null,
+    _yes_no: null,
     ctor:function () {
         this._super();
         this.init();
@@ -51,20 +54,45 @@ var GameLayer = cc.Layer.extend({
             menuItemSprite2);
         item2.setCallback(this.onModeChange, this);
 
-        var menu = new cc.Menu(item2);
+        var panel7 = new cc.Sprite(res.panel_png, cc.rect(84, 168, 42, 42));
+        var panel8 = new cc.Sprite(res.panel_png, cc.rect(84, 168, 42, 42));
+        var panel9 = new cc.Sprite(res.panel_png, cc.rect(84, 168, 42, 42));
+
+        var menuItemSprite3 = new cc.MenuItemSprite(panel7,panel8,panel9, this.openDialog,this);
+
+        var menu = new cc.Menu(item2, menuItemSprite3);
         menu.setPosition(100,100);
+        menu.alignItemsHorizontally()
         this.addChild(menu);
 
         if ('mouse' in cc.sys.capabilities){
             cc.eventManager.addListener({
                 event: cc.EventListener.MOUSE,
                 onMouseUp: function(event){
-                    if(event.getButton() == cc.EventMouse.BUTTON_LEFT)
-                        console.log(String(event.getLocationX()) + ", " + String(event.getLocationY()));
+                    if(event.getButton() == cc.EventMouse.BUTTON_LEFT){
                         event.getCurrentTarget().point(event);
+                    }else if(event.getButton() == cc.EventMouse.BUTTON_RIGHT){
+                        if(event.getCurrentTarget()._state != STATE_PLAYING)
+                            return;
+                        event.getCurrentTarget().setFlag(event);
+                    }
                 }
             }, this);
         }
+
+        if (cc.sys.capabilities.hasOwnProperty('keyboard'))
+            cc.eventManager.addListener({
+                event: cc.EventListener.KEYBOARD,
+                onKeyReleased:function (key,event) {
+                    if(key == cc.KEY["escape"]){ //Androidの戻るボタン
+                        if(event.getCurrentTarget()._state == STATE_PLAYING){
+                            event.getCurrentTarget().openDialog();
+                        }else if(event.getCurrentTarget()._state == STATE_PAUSE){
+                            event.getCurrentTarget().closeDialog();
+                        }
+                    }
+                }
+            }, this);
 
         if (cc.sys.capabilities.hasOwnProperty('touches')){
             cc.eventManager.addListener({
@@ -93,7 +121,7 @@ var GameLayer = cc.Layer.extend({
             this.setFlag(event);
     },
     initPanel: function () {
-        var winSize = cc.director.getWinSize();
+        var winSize = cc.winSize;
         this._bombs = []
         for (var i=0; i < this._bomb_num; i++){
             var bp = Math.floor(Math.random() * (this._panels_width * this._panels_height));
@@ -159,7 +187,7 @@ var GameLayer = cc.Layer.extend({
     },
 
     openPanel: function (event) {
-        var winSize = cc.director.getWinSize();
+        var winSize = cc.winSize;
         var row = Math.floor(event.getLocationX() / 42);
         var line = Math.floor((winSize.height  - event.getLocationY()) / 42);
         if(row < 0 || row >= this._panels_width || 
@@ -191,7 +219,7 @@ var GameLayer = cc.Layer.extend({
     },
 
     setFlag: function (event) {
-        var winSize = cc.director.getWinSize();
+        var winSize = cc.winSize;
         var row = Math.floor(event.getLocationX() / 42);
         var line = Math.floor((winSize.height  - event.getLocationY()) / 42);
         if(row < 0 || row >= this._panels_width || 
@@ -250,6 +278,48 @@ var GameLayer = cc.Layer.extend({
         var scene = new cc.Scene();
         scene.addChild(new GameOver());
         cc.director.runScene(new cc.TransitionFade(1.2, scene));
+    },
+    openDialog:function () {
+        if(this._state == STATE_PAUSE)
+            return
+        this._state = STATE_PAUSE;
+        this._dialog = new cc.Sprite(res.dialog_png);
+        this._dialog.attr({
+            x: cc.winSize.width / 2,
+            y: cc.winSize.height / 2,
+            scale: 1.5
+        });
+        this.addChild(this._dialog, 1, 1);
+
+        var yesNormal = new cc.Sprite(res.yes_no_png, cc.rect(0, 0, 65, 20));
+        var yesSelected = new cc.Sprite(res.yes_no_png, cc.rect(0, 20, 65, 20));
+        var yesDisabled = new cc.Sprite(res.yes_no_png, cc.rect(0, 40, 65, 20));
+
+        var yes = new cc.MenuItemSprite(yesNormal, yesSelected, yesDisabled, this.backTitle, this);
+        yes.scale = 1.5;
+
+        var noNormal = new cc.Sprite(res.yes_no_png, cc.rect(65, 0, 65, 20));
+        var noSelected = new cc.Sprite(res.yes_no_png, cc.rect(65, 20, 65, 20));
+        var noDisabled = new cc.Sprite(res.yes_no_png, cc.rect(65, 40, 65, 20));
+
+        var no = new cc.MenuItemSprite(noNormal, noSelected, noDisabled, this.closeDialog, this);
+        no.scale = 1.5;
+
+        this._yes_no = new cc.Menu(yes, no);
+        this._yes_no.alignItemsVerticallyWithPadding(10);
+        this.addChild(this._yes_no, 1, 2);
+        this._yes_no.x = cc.winSize.width / 2;
+        this._yes_no.y = cc.winSize.height / 2 - 20;
+    },
+    closeDialog:function () {
+        this.removeChild(this._yes_no);
+        this.removeChild(this._dialog);
+        this._state = STATE_PLAYING;
+    },
+    backTitle:function () {
+        cc.LoaderScene.preload(g_main_menu, function () {
+            cc.director.runScene(new MainMenuScene());
+        }, this);
     }
 });
 

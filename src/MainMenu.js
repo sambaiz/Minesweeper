@@ -22,11 +22,18 @@ var MainMenuLayer = cc.Layer.extend({
         var startGame = new cc.MenuItemSprite(startGameNormal, startGameSelected, startGameDisabled, this.onStartGame, this);
         startGame.scale = 1.5;
 
-        var menu = new cc.Menu(startGame);
+        var endGameNormal = new cc.Sprite(res.end_png, cc.rect(0, 0, 126, 33));
+        var endGameSelected = new cc.Sprite(res.end_png, cc.rect(0, 33, 126, 33));
+        var endGameDisabled = new cc.Sprite(res.end_png, cc.rect(0, 33 * 2, 126, 33));
+
+        var endGame = new cc.MenuItemSprite(endGameNormal, endGameSelected, endGameDisabled, this.onEndGame, this);
+        endGame.scale = 1.5;
+
+        var menu = new cc.Menu(startGame, endGame);
         menu.alignItemsVerticallyWithPadding(10);
         this.addChild(menu, 1, 2);
         menu.x = winSize.width / 2;
-        menu.y = winSize.height / 2 - 80;
+        menu.y = winSize.height / 2 - 100;
 
         return true;
     },
@@ -34,6 +41,9 @@ var MainMenuLayer = cc.Layer.extend({
         cc.LoaderScene.preload(g_game, function () {
             cc.director.runScene(new cc.TransitionFade(1.2, new GameScene()));
         }, this);
+    },
+    onEndGame:function (pSender) {
+        cc.director.end()
     }
 });
 
