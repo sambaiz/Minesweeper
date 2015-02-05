@@ -168,7 +168,7 @@ var GameLayer = cc.Layer.extend({
         }
         
         var p = this._panels[line][row];
-        if(p[1] == OPEN)
+        if(p[1] == OPEN || p[1] == FLAG)
             return;
         p[1] = OPEN;
 
