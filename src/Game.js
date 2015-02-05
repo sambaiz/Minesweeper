@@ -15,7 +15,6 @@ var FLAG = 2;
 var GameLayer = cc.Layer.extend({
     _panels: [],
     _bombs: [],
-    _miss_flags: [],
     _panel_size: cc.p(42, 42),
     _panels_width: 5,
     _panels_height: 5,
@@ -25,6 +24,7 @@ var GameLayer = cc.Layer.extend({
     _dialog: null,
     _yes_no: null,
     _is_set_bomb: false,
+    _open_count: null,
     ctor:function () {
         this._super();
         this.init();
@@ -37,6 +37,7 @@ var GameLayer = cc.Layer.extend({
         this._state = STATE_PLAYING;
         this._mode = MINE_MODE;
         this._is_set_bomb = false;
+        this._open_count = this._panels_width * this._panels_height;
 
         this.addChild(this.v_control());
 
@@ -141,7 +142,6 @@ var GameLayer = cc.Layer.extend({
         return def_line;
     },
     setBomb: function () {
-        this._miss_flags = [];
         for(var b of this._bombs){
             var line = Math.floor(b / this._panels_width);
             var row = b % this._panels_width;
@@ -174,8 +174,6 @@ var GameLayer = cc.Layer.extend({
 
         if(p[0] != -1){
             var panel = new cc.Sprite(res.panel_png, cc.rect(42 * (p[0] % 3), 42 * (Math.floor(p[0] / 3) + 1), 42, 42));
-            if(this._miss_flags.indexOf(this._panels_width * line + row) >= 0)
-                this._miss_flags.splice(this._miss_flags.indexOf(this._panels_width * line + row), 1);
         }else{
             var panel = new cc.Sprite(res.panel_png, cc.rect(84, 0, 42, 42));
         }
@@ -191,6 +189,9 @@ var GameLayer = cc.Layer.extend({
             this._state = STATE_GAMEOVER;
             MS.CLEAR = false;
             this.onGameOver();
+        }else{
+            this._open_count--;
+            this.clearCheck();
         }
     },
     putFlag: function (row, line) {
@@ -207,10 +208,6 @@ var GameLayer = cc.Layer.extend({
                 x: this._panel_size.x * row,
                 y: cc.winSize.height - (this._panel_size.y * line)
             });
-            if(this._bombs.indexOf(this._panels_width * line + row) >= 0)
-                this._bombs.splice(this._bombs.indexOf(this._panels_width * line + row), 1);
-            else
-                this._miss_flags.push(this._panels_width * line + row);
         }else if(p[1] == FLAG){
             p[1] = CLOSE;
             var panel = new cc.Sprite(res.panel_png, cc.rect(0, 0, 42, 42));
@@ -220,16 +217,10 @@ var GameLayer = cc.Layer.extend({
                 x: this._panel_size.x * row,
                 y: cc.winSize.height - (this._panel_size.y * line)
             });
-            if(p[0] == -1)
-                this._bombs.push(this._panels_width * line + row);
-            else
-                if(this._miss_flags.indexOf(this._panels_width * line + row) >= 0)
-                    this._miss_flags.splice(this._miss_flags.indexOf(this._panels_width * line + row), 1);
         }else{
             return;
         }
         this.addChild(panel, 10, 1);
-        this.clearCheck();
     },
     onModeChange:function(){
         if(this._mode == MINE_MODE)
@@ -238,9 +229,7 @@ var GameLayer = cc.Layer.extend({
             this._mode = MINE_MODE;
     },
     clearCheck:function(){
-        console.log(this._bombs);
-        console.log(this._miss_flags);
-        if(this._is_set_bomb && this._bombs.length == 0 && this._miss_flags == 0){
+        if(this._open_count - this._bomb_num == 0){
             this._state = STATE_CLEAR;
             MS.CLEAR = true;
             this.onGameOver();
@@ -287,20 +276,23 @@ var GameLayer = cc.Layer.extend({
     v_mode_mine:function () {
         var mineNormal = new cc.Sprite(res.panel_png, cc.rect(0, 168, 42, 42));
         var mineSelected = new cc.Sprite(res.panel_png, cc.rect(42, 168, 42, 42));
+        var mineDisabled = new cc.Sprite(res.panel_png, cc.rect(0, 168, 42, 42));
 
-        return new cc.MenuItemSprite(mineNormal,mineSelected,null, null,this);
+        return new cc.MenuItemSprite(mineNormal,mineSelected,mineDisabled, null,this);
     },
     v_mode_flag:function () {
         var flagNormal = new cc.Sprite(res.panel_png, cc.rect(42, 168, 42, 42));
         var flagSelected = new cc.Sprite(res.panel_png, cc.rect(0, 168, 42, 42));
+        var flagDisabled = new cc.Sprite(res.panel_png, cc.rect(0, 168, 42, 42));
 
-        return new cc.MenuItemSprite(flagNormal,flagSelected,null, null,this);
+        return new cc.MenuItemSprite(flagNormal,flagSelected,flagDisabled, null,this);
     },
     v_pause:function () {
         var pauseNormal = new cc.Sprite(res.panel_png, cc.rect(84, 168, 42, 42));
         var pauseSelected = new cc.Sprite(res.panel_png, cc.rect(84, 168, 42, 42));
+        var pauseDisabled = new cc.Sprite(res.panel_png, cc.rect(84, 168, 42, 42));
 
-         return new cc.MenuItemSprite(pauseNormal,pauseSelected, null, this.openDialog,this);
+         return new cc.MenuItemSprite(pauseNormal,pauseSelected, pauseDisabled, this.openDialog,this);
     },
     v_dialog_bg:function () {
         dialog = new cc.Sprite(res.dialog_png);
@@ -321,16 +313,19 @@ var GameLayer = cc.Layer.extend({
     v_dialog_yes:function () {
         var yesNormal = new cc.Sprite(res.yes_no_png, cc.rect(0, 0, 65, 20));
         var yesSelected = new cc.Sprite(res.yes_no_png, cc.rect(0, 20, 65, 20));
+        var yesDisabled = new cc.Sprite(res.yes_no_png, cc.rect(0, 40, 65, 20));
 
-        var yes = new cc.MenuItemSprite(yesNormal, yesSelected, null, this.onBackTop, this);
+        var yes = new cc.MenuItemSprite(yesNormal, yesSelected, yesDisabled, this.onBackTop, this);
         yes.scale = 1.5;
         return yes;
     },
     v_dialog_no:function () {
         var noNormal = new cc.Sprite(res.yes_no_png, cc.rect(65, 0, 65, 20));
         var noSelected = new cc.Sprite(res.yes_no_png, cc.rect(65, 20, 65, 20));
+        var noDisabled = new cc.Sprite(res.yes_no_png, cc.rect(65, 40, 65, 20));
 
-        var no = new cc.MenuItemSprite(noNormal, noSelected, null, this.closeDialog, this);
+
+        var no = new cc.MenuItemSprite(noNormal, noSelected, noDisabled, this.closeDialog, this);
         no.scale = 1.5;
         return no;
     }

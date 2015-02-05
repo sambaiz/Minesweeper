@@ -57,7 +57,7 @@ var GameOver = cc.Layer.extend({
     },
     v_back_top:function (pSender) {
         var topNormal = new cc.Sprite(res.top_png, cc.rect(0, 0, 126, 33));
-        var topSelected = new cc.Sprite(res.toop_png, cc.rect(0, 33, 126, 33));
+        var topSelected = new cc.Sprite(res.top_png, cc.rect(0, 33, 126, 33));
         var topDisabled = new cc.Sprite(res.top_png, cc.rect(0, 33 * 2, 126, 33));
 
         var top = new cc.MenuItemSprite(topNormal, topSelected, topDisabled, this.onBackTop, this);
