@@ -35,6 +35,14 @@ var MainMenuLayer = cc.Layer.extend({
         menu.x = winSize.width / 2;
         menu.y = winSize.height / 2 - 100;
 
+        if (cc.sys.capabilities.hasOwnProperty('keyboard'))
+            cc.eventManager.addListener({
+                event: cc.EventListener.KEYBOARD,
+                onKeyReleased:function (key,event) {
+                    event.getCurrentTarget().onEndGame();
+                }
+            }, this);
+
         return true;
     },
     onStartGame:function (pSender) {
@@ -43,7 +51,7 @@ var MainMenuLayer = cc.Layer.extend({
         }, this);
     },
     onEndGame:function (pSender) {
-        cc.director.end()
+        cc.director.end();
     }
 });
 
