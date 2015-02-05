@@ -32,7 +32,7 @@ var GameLayer = cc.Layer.extend({
         this.initPanel()
 
         var winSize = cc.director.getWinSize();
-        this.addChild(new cc.LayerColor(cc.color(255,255,0,255), winSize.width, winSize.height),0)
+        this.addChild(new cc.LayerColor(cc.color(255,255,0,255), cc.winSize.width, cc.winSize.height),0)
 
         this._state = STATE_PLAYING;
         this._mode = MINE_MODE;
