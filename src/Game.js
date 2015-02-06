@@ -30,14 +30,17 @@ var GameLayer = cc.Layer.extend({
         this.init();
     },
     init:function () {
-        this.initPanel();
 
         this.addChild(new cc.LayerColor(cc.color(255,255,0,255), cc.winSize.width, cc.winSize.height),0);
 
         this._state = STATE_PLAYING;
         this._mode = MINE_MODE;
         this._is_set_bomb = false;
+        this._panels_width = MS.SIZE;
+        this._bomb_num = MS.BOMB_NUM;
         this._open_count = this._panels_width * this._panels_height;
+
+        this.initPanel();
 
         this.addChild(this.v_control());
 
@@ -192,7 +195,8 @@ var GameLayer = cc.Layer.extend({
         }else{
             this._open_count--;
             this.clearCheck();
-        }
+        }  
+
     },
     putFlag: function (row, line) {
         if(!this._is_set_bomb)
@@ -245,10 +249,10 @@ var GameLayer = cc.Layer.extend({
             return
         this._state = STATE_PAUSE;
         this._dialog = this.v_dialog_bg();
-        this.addChild(this._dialog, 1, 1);
+        this.addChild(this._dialog, 10, 1);
 
         this._yes_no = this.v_dialog_yes_no()
-        this.addChild(this._yes_no, 1, 2);
+        this.addChild(this._yes_no, 10, 2);
     },
     closeDialog:function () {
         this.removeChild(this._yes_no);

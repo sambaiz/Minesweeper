@@ -8,13 +8,19 @@ var res = {
     top_png : 'res/top.png',
 	end_png : 'res/end.png',
 	dialog_png : 'res/dialog.png',
-	yes_no_png : 'res/yes_no.png'
+	yes_no_png : 'res/yes_no.png',
+    up_down_png : 'res/up_down.png',
+    settings_png : 'res/config.png',
+    decide_png : 'res/decide.png'
 };
 
 var g_main_menu = [
     res.title_png,
     res.start_button_png,
-    res.end_png
+    res.end_png,
+    res.up_down_png,
+    res.settings_png,
+    res.decide_png
 ];
 
 var g_game = [
