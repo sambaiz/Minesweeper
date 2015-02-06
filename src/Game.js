@@ -195,7 +195,20 @@ var GameLayer = cc.Layer.extend({
         }else{
             this._open_count--;
             this.clearCheck();
-        }  
+        }
+
+        if(p[0] == 0)
+            for(var i=-1; i <= 1; i++)
+                for(var j=-1; j <= 1; j++)
+                    if(line + i >= 0 &&
+                        row + j >= 0 &&
+                        line + i < this._panels.length &&
+                        row + j < this._panels[line + i].length){
+                            if(i==0 && j==0)
+                                continue;
+                            else
+                                this.openPanel(row+j, line+i);
+                    }        
 
     },
     putFlag: function (row, line) {
